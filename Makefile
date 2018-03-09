@@ -1,10 +1,10 @@
 
-MCU = attiny2313
-TARGET = $(PROJECT).elf
-SOURCES = $(PROJECT).c
+mc = attiny2313
+TARGET = $(program).elf
+SOURCES = $(program).c
 CC = avr-gcc
 
-COMMON = -mmcu=$(MCU)
+COMMON = -mmcu=$(mc)
 
 CFLAGS = $(COMMON)
 CFLAGS += -Wall -gdwarf-2 -O0
@@ -22,13 +22,13 @@ HEX_EEPROM_FLAGS = -j .eeprom
 HEX_EEPROM_FLAGS += --set-section-flags=.eeprom="alloc,load"
 HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0
 
-OBJECTS = $(PROJECT).o
+OBJECTS = $(program).o
 
-all: checkname $(TARGET) $(PROJECT).hex $(PROJECT).eep $(PROJECT).lss
+all: checkname $(TARGET) $(program).hex $(program).eep $(program).lss
 
 checkname:
-ifndef PROJECT
-	$(error PROJECT is not set)
+ifndef program
+	$(error 'program' is not set. Use 'make program=<name of program>')
 endif
 
 $(OBJECTS): $(SOURCES) 
@@ -45,7 +45,7 @@ $(TARGET): $(OBJECTS)
 
 %.lss: $(TARGET)
 	avr-objdump -h -S $< > $@
-	$(CC) $(INCLUDES) $(CFLAGS) -S $(SOURCES) -o$(PROJECT).S
+	$(CC) $(INCLUDES) $(CFLAGS) -S $(SOURCES) -o$(program).S
 
 .PHONY: clean
 clean:
@@ -53,6 +53,6 @@ clean:
 
 -include $(shell mkdir dep 2>/dev/null) $(wildcard dep/*)
 
-flash: $(PROJECT).hex
+flash: $(program).hex
 	stty 9600 ignbrk -brkint -icrnl -imaxbel -opost -isig -icanon -iexten -echo noflsh </dev/ttyS0
-	avrdude -b 9660 -p $(MCU) -c nikolaew -P /dev/ttyS0 -v -U flash:w:$(PROJECT).hex:i
+	avrdude -b 9660 -p $(MCU) -c nikolaew -P /dev/ttyS0 -v -U flash:w:$(program).hex:i

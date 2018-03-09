@@ -6,6 +6,23 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 
+/*
+ * PB0 ---> a
+ * PB1 ---> b
+ * PB2 ---> c
+ * PB3 ---> d
+ * PB4 ---> e
+ * PB5 ---> f
+ * PB6 ---> g
+ * PB7 ---> h 
+ * PD0
+ * PD1
+ * PD2 <--- counter:divider0 (INT0) 
+ * PD3 <--- counter:divider1 (INT1)
+ * PD4
+ * PD5
+ * PD6
+ */
 
 /*
        a   
@@ -39,26 +56,33 @@ static const unsigned char segments[16] PROGMEM = {
 	/* 01110001 f */ 0x71
 };
 
-volatile int counter = 0;     
+// max 65535
+volatile uint16_t counter = 0;     
+
+#define divider0 100
+#define divider1 1000
 
 ISR(INT0_vect) {
     counter++;
-    // set led as counter 1:100
+    // set led as counter 1:divider0
     PORTB = pgm_read_byte(&(
-                segments[(counter/100) & 0x0f]
+                segments[(counter/divider0) & 0x0f]
                 ));
-    // blink by 'dot'
-    PORTB ^= _BV(PB7);
+    // mark that divider is '0' 
+    PORTB &= ~(_BV(PB7));
 }
 
 ISR(INT1_vect) {
     counter++;
-    // set led as counter 1:1000
+    // set led as counter 1:divider1
     PORTB = pgm_read_byte(&(
-                segments[(counter/1000) & 0x0f]
+                segments[(counter/divider1) & 0x0f]
                 ));
-    // blink by 'dot'
-    PORTB ^= _BV(PB7);
+    // mark that divider is '1' 
+    PORTB |= _BV(PB7);
+}
+
+ISR(TIMER1_OVF_vect) {
 }
 
 int main() {
@@ -71,10 +95,21 @@ int main() {
     GIMSK = _BV(INT0) | _BV(INT1);
     // into and int1 by rising edges
     MCUCR = _BV(ISC11) | _BV(ISC10) | _BV(ISC01) | _BV(ISC00);
-    
+    // timer to 1 Hz:
+    // 12000000.0 / (2*1024*(5858 + 1)) = 1.000064004096262
+    // prescale N = 1024
+    // OCR1A = 5858
+    // enable timer overflow interrupt for both Timer0 and Timer1
+    TIMSK = _BV(TOIE1);
+    // set timer0 counter initial value to 0
+    TCNT1 = 0x00;
+    // start timer0 with /1024 prescaler
+    // TCCR0 = (1<<CS02) | (1<<CS00);
+    // lets turn on 16 bit timer1 also with /1024
+    // TCCR1B |= (1 << CS10) | (1 << CS12);
     sei();    
 
-#if 1
+#if 0
     for(int i=0; i<16; i++) {
         // check: show all numbers
         PORTB = pgm_read_byte(&(segments[i] ));

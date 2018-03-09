@@ -7,7 +7,7 @@
 #include <avr/wdt.h>
 
 /*
- * Simple autonomous car
+ * Simple autonomous car (variant 01.az)
  * 2-wheel drive
  * One axis is connected to optical shaft encoder
  * Car chaotically dances in loop:
