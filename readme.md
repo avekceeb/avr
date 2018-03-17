@@ -1,5 +1,8 @@
 # Разные программки для AVR
 
+## сборка:
+    make mc=atmega8 program=simple-car-mega8
+
 ## ШИМ
 - fast-pwm-quadratic.c
 
