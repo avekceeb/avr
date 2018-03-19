@@ -122,7 +122,7 @@ void start_IR_timer(uint8_t time_ms) {
     //OCR1A = ((uint32_t) time_ms * 1000)/4;
     // for 12MHz:
     OCR1A = ((uint16_t)(time_ms * 187.5));
-    TCCR1B |= (1<<WGM12); // CTC mode -> TCNT1 = OCR1A    
+    TCCR1B |= (1<<WGM12); // CTC mode -> TCNT1 = OCR1A
     TCCR1B |= (1<<CS10)|(1<<CS11); // prescaler 64
     TIMSK |= (1<<OCIE1A); // allow interrupts
 }
@@ -195,7 +195,7 @@ void on_repeat_command() {
         
         start_IR_timer(MAX_DELAY_FOR_REPEAT_COMMAND); // wait next repeat command
     } else {
-        //  problem, invalid protocol, reset receiver
+        // problem, invalid protocol, reset receiver
         reset_IR_receiver();
         reset_packet();
     }

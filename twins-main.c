@@ -2,6 +2,7 @@
  * Simple toy car
  * 2 brush motors on H-bridge
  * variant 01.vedi
+
                                atmega8
                              +---------+
                 (RESET) PC6 -| 1     28|- PC5 (ADC5/SCL)
@@ -62,6 +63,20 @@
 #define turn_right_cmd 0b00001001
 #define break_all_cmd  0b00000000
 
+#define break_left_mask 0b11111100
+#define break_right_mask 0b11110011
+
+#define stop_left(current)  current &= break_left_mask;\
+                            set_direction(current)
+#define stop_right(current) current &= break_right_mask;\
+                            set_direction(current)
+
+#define timer_enable_both (TIMSK = (_BV(TOIE0) | _BV(TOIE1)))
+// TODO: disable timer, not interrupt
+#define timer_stop_both TIMSK = 0
+#define timer_stop_left TIMSK &= ~(_BV(TOIE0))
+#define timer_stop_right TIMSK &= ~(_BV(TOIE1))
+
 // ----- command codes ------
 // ir remote control for Yamaha CDX4
 #define cmd_invalid 0x00
@@ -73,27 +88,45 @@
 #define cmd_speedup 0x1d
 #define cmd_slowdown 0x1c
 
+#define cmd_test_fwd 0x12
+#define cmd_test_bkw 0x18
+#define cmd_test_left 0x14
+#define cmd_test_right 0x16
+#define cmd_test_stop 0x15
+
 // ---- usart settings ------
 #define baudrate 9600
 // asyncronous normal mode:
 #define ubrr (F_CPU/16/baudrate-1)
 
 // ---- transmission settings
-// 2 rounds of wheel
-#define left_encoder (0xff-12) 
-#define right_encoder (0xff-12) 
+// rounds of wheel
+#define set_left_rounds(x)   TCNT0 = (0xff-(uint8_t)x)
+#define set_right_rounds(x)  TCNT1H = 0xff;\
+                             TCNT1L = (0xff-(uint8_t)x)
+
+uint8_t speed;
+// direction is actually just a h-bridge combination
+uint8_t direction;
+// TODO: stuck checks
+
+// TODO: if command arrives
+// in the middle of 'running' previous ???
 
 // shaft encoder L Timer0 - 8bit
 ISR (TIMER0_OVF_vect) {
     // TODO: wdt reset 
-    PORTD ^= _BV(ledL);
-    TCNT0 = left_encoder;
+    PORTD |= _BV(ledL);
+    set_left_rounds(0);
+    stop_left(direction);
+    timer_stop_left;
 }
 // shaft encoder R Timer1 - 16bit
 ISR (TIMER1_OVF_vect) {
-    PORTD ^= _BV(ledR);
-    TCNT1H = 0xff;
-    TCNT1L = right_encoder;
+    PORTD |= _BV(ledR);
+    set_right_rounds(0);
+    stop_right(direction);
+    timer_stop_right;
 }
 
 uint8_t command;
@@ -124,17 +157,16 @@ int main(void) {
 
     // 2) configure timers
     // enable timer interrupt
-    TIMSK = _BV(TOIE0) | _BV(TOIE1);
+    //TIMSK = _BV(TOIE0) | _BV(TOIE1);
+    // disable int:
+    TIMSK = 0;
     // Counter0:
     // External clock source on T0 pin. Clock on rising edge
     TCCR0 = _BV(CS02) | _BV(CS01) | _BV(CS00);
     // Counter1: normal mode
     // External clock source on T1 pin. Clock on rising edge
     TCCR1B = _BV(CS12) | _BV(CS11) | _BV(CS10);
-
-    TCNT0 = left_encoder;
     TCNT1H = 0xff;
-    TCNT1L = right_encoder;
 
     // 4) set phase correct pwm for Counter2 (non-invert)
     // Clear OC2 on Compare Match when up-counting.
@@ -146,15 +178,23 @@ int main(void) {
 
     // initial state of h-bridge: stop at full speed
     port_bridge = 0;
-    uint8_t speed = 0xdd;
-    uint8_t direction = break_all_cmd;
+    speed = 0xdd;
+    direction = break_all_cmd;
     command = cmd_invalid;
     newcommand = 0x01;
 
+    PORTD &= ~(_BV(ledL));
+    PORTD &= ~(_BV(ledR));
+
     sei();
-    
+
     while (1) {
         if (newcommand) {
+            // TODO: if repeat by IR-NEC ??
+            PORTD &= ~(_BV(ledL));
+            PORTD &= ~(_BV(ledR));
+            // ??? OK now aborting current command:
+            timer_stop_both;
             switch(command) {
                 case cmd_fwd:
                 case 'f':
@@ -162,7 +202,6 @@ int main(void) {
                 case 'b':
                 case cmd_bkw:
                     direction = move_bkw_cmd; break;
-                // TODO: limited movement
                 case 'l':
                 case cmd_left:
                     direction = turn_left_cmd; break;
@@ -171,6 +210,7 @@ int main(void) {
                     direction = turn_right_cmd; break;
                 case 's':
                 case cmd_stop:
+                case cmd_test_stop:
                     direction = break_all_cmd; break;
                 case '+':
                 case cmd_speedup:
@@ -183,6 +223,31 @@ int main(void) {
                     if (speed > 0x00) {
                         speed--;
                     }
+                    break;
+                // --- experimental ---
+                case cmd_test_fwd:
+                    direction = move_fwd_cmd;
+                    set_left_rounds(24);
+                    set_right_rounds(24);
+                    timer_enable_both;
+                    break;
+                case cmd_test_bkw:
+                    direction = move_bkw_cmd;
+                    set_left_rounds(12);
+                    set_right_rounds(12);
+                    timer_enable_both;
+                    break;
+                case cmd_test_left:
+                    direction = turn_left_cmd;
+                    set_left_rounds(6);
+                    set_right_rounds(6);
+                    timer_enable_both;
+                    break;
+                case cmd_test_right:
+                    direction = turn_right_cmd;
+                    set_left_rounds(6);
+                    set_right_rounds(6);
+                    timer_enable_both;
                     break;
             }
             set_direction(direction);
