@@ -1,5 +1,5 @@
 #include <avr/io.h>
-#define F_CPU 12000000UL
+#define F_CPU 16000000UL
 #include <util/delay.h>
 #include "wh1602l-ygk-ct.h"
 
@@ -20,6 +20,15 @@
 #define rs_bit PD2
 #define rs_port PORTD
 #define rs_dir DDRD
+
+//#define en_bit PB3
+//#define en_port PORTB
+//#define en_dir DDRB
+
+//#define rs_bit PB4
+//#define rs_port PORTB
+//#define rs_dir DDRB
+
 
 #define data_port PORTD
 #define data_dir DDRD
@@ -99,7 +108,8 @@ void lcd_init() {
 }
 
 int main(void) {
-    data_dir |= (_BV(en_bit) | _BV(rs_bit) | data_bits) ;
+    data_dir = (data_bits) ;
+    rs_dir = _BV(en_bit) | _BV(rs_bit);
 
     lcd_init();
 

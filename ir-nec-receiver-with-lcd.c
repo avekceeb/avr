@@ -29,13 +29,13 @@
  */
  
 
-#define en_bit PD1
-#define en_port PORTD
-#define en_dir DDRD
+#define en_bit PB3
+#define en_port PORTB
+#define en_dir DDRB
 
-#define rs_bit PD0
-#define rs_port PORTD
-#define rs_dir DDRD
+#define rs_bit PB4
+#define rs_port PORTB
+#define rs_dir DDRB
 
 #define data_port PORTD
 #define data_dir DDRD
@@ -371,8 +371,8 @@ int main(void) {
     char * format = "%02x:%02x:%02x";
     char buffer[10];
     
-    data_dir |= (_BV(en_bit) | _BV(rs_bit) | data_bits) ;
-    DDRB |= (_BV(PB1) | _BV(PB2));
+    data_dir |= (data_bits) ;
+    DDRB |= (_BV(en_bit) | _BV(rs_bit) | _BV(PB1) | _BV(PB2));
 
     sprintf (buffer, format,
         (unsigned char)0xab,
