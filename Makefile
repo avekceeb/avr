@@ -56,3 +56,6 @@ clean:
 flash: $(program).hex
 	stty 9600 ignbrk -brkint -icrnl -imaxbel -opost -isig -icanon -iexten -echo noflsh </dev/ttyS0
 	avrdude -b 9660 -p $(MCU) -c nikolaew -P /dev/ttyS0 -v -U flash:w:$(program).hex:i
+
+# check: avrdude -p $(mc) -c usbasp -P usb -n
+# avrdude -p atmega8 -c usbasp -P usb -v -U flash:w:$(program).hex:i

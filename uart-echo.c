@@ -1,4 +1,4 @@
-#define F_CPU 16000000UL
+#define F_CPU 12000000UL
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-//#define BAUD 9600
-#define BAUD 2400
+#define BAUD 9600
+//#define BAUD 2400
 // asyncronous normal mode:
 #define MYUBRR (F_CPU/16/BAUD-1)
 
@@ -69,8 +69,8 @@ static const unsigned char segments[16] PROGMEM = {
 #endif
 
 uint8_t rx_data = 0;
-char * message = "hello from attiny\n";
-uint8_t message_sz = 18;
+char * message = "hello from mc\r\n";
+uint8_t message_sz = 15;
 
 void transmit(uint8_t data) {
     while (!(UCSRA & _BV(UDRE)));
@@ -113,7 +113,7 @@ int main(void) {
     sei();
     uint8_t i;
     while(1) {
-        PORTB ^= 0;
+        PORTB = ~(PORTB);
         _delay_ms(2000);
         for (i=0; i<message_sz; i++) {
             transmit(message[i]);
