@@ -1,24 +1,23 @@
 #ifndef WH1602L_H
 #define WH1602L_H
 
-#define lcd_funcset_4bit_2lines_5x8dots 0b00101100
-#define lcd_funcset_8bit_2lines_5x8dots 0b00111100
-#define lcd_display_off 0b00001000
+#define lcd_funcset_4bit_2lines_5x8dots   0b00101100
+#define lcd_funcset_8bit_2lines_5x8dots   0b00111100
+#define lcd_display_off                   0b00001000
 #define lcd_display_on_cursor_on_blink_on 0b00001111
-#define lcd_display_on 0b00001100
-#define lcd_display_clear 0b00000001
-#define lcd_entry_mode_cursor_right 0b00000110
-#define lcd_home 0b00000010
-#define lcd_goto_upper_line 0b10000000
-#define lcd_goto_lower_line 0b11000000
-
+#define lcd_display_on                    0b00001100
+#define lcd_display_clear                 0b00000001
+#define lcd_entry_mode_cursor_right       0b00000110
+#define lcd_home                          0b00000010
+#define lcd_goto_upper_line               0b10000000
+#define lcd_goto_lower_line               0b11000000
 
 #define space   0x20
 
 #define cyr_a   0x61
 #define cyr_s   0x63
 #define cyr_e   0x65
-#define cyr_k   0x6b
+//#define cyr_k   0x6b
 #define cyr_o   0x6f
 #define cyr_r   0x70
 #define cyr_u   0x79
