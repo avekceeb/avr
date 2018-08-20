@@ -59,3 +59,5 @@ flash: $(program).hex
 
 # check: avrdude -p $(mc) -c usbasp -P usb -n
 # avrdude -p atmega8 -c usbasp -P usb -v -U flash:w:$(program).hex:i
+read:
+	avrdude -p $(mc) -c usbasp -P usb -v -U flash:r:read.hex:i
