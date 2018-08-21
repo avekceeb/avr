@@ -12,6 +12,11 @@
 #define lcd_goto_upper_line               0b10000000
 #define lcd_goto_lower_line               0b11000000
 
+void wh1602_print(char *buffer, char line);
+
+#define wh1602_print_upper(b) wh1602_print(b,lcd_goto_upper_line)
+#define wh1602_print_lower(b) wh1602_print(b,lcd_goto_lower_line)
+
 #define space   0x20
 
 #define cyr_a   0x61

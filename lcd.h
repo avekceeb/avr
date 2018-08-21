@@ -24,7 +24,7 @@
 
 #define data_bits (_BV(PD4)|_BV(PD5)|_BV(PD6)|_BV(PD7))
 
-void lcd_upper_4bit_command(unsigned char command);
+//void lcd_upper_4bit_command(unsigned char command);
 
 void lcd_command(unsigned char command);
 

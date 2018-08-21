@@ -6,14 +6,14 @@
 void sleep20ms() { _delay_ms(20); }
 void sleep1ms() { _delay_ms(1); }
 
-void en_strobe() {
+static void en_strobe() {
     set_bit(en_port, en_bit);
     sleep1ms();
     clear_bit(en_port, en_bit);
     sleep1ms();
 }
 
-void lcd_upper_4bit_command(unsigned char command) {
+static void lcd_upper_4bit_command(unsigned char command) {
     clear_bit(rs_port, rs_bit);
     data_port = (command & 0xf0) | (data_port & 0x0f);
     en_strobe();
@@ -36,7 +36,6 @@ void lcd_data(char byte) {
     data_port = ((byte<<4) & 0xf0) | (data_port & 0x0f);
     en_strobe();
 }
-
 
 void lcd_init() {
     data_dir |= (data_bits) ;

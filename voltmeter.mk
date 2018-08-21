@@ -23,7 +23,7 @@ HEX_EEPROM_FLAGS = -j .eeprom
 HEX_EEPROM_FLAGS += --set-section-flags=.eeprom="alloc,load"
 HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0
 
-OBJECTS = $(program).o lcd.o
+OBJECTS = $(program).o lcd.o wh1602l-ygk-ct.o
 
 all: checkname $(TARGET) $(program).hex $(program).eep $(program).lss
 
